@@ -176,12 +176,15 @@ RUN for key in $( \
 
 RUN apt autoremove -y && apt autoclean -y && apt clean
 
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN echo "root:root" | chpasswd
+
 RUN mkdir /data
 WORKDIR /data
 VOLUME /data
 
-EXPOSE 8080
 EXPOSE 22
+EXPOSE 18000-18009
 
 RUN mkdir /run/sshd
 # 启动 SSH 服务

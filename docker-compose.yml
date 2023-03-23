@@ -1,7 +1,7 @@
 version: '3.2'
 
 services:
-  dev-ubuntu:
+  flow-remote:
     build:
       context: "./"
       args:
@@ -13,11 +13,12 @@ services:
         - INSTALL_NODE=true
         - NODE_VERSION=16
         - INSTALL_YARN=true
-    image: "dev-ubuntu:latest"
-    container_name: "dev-ubuntu"
+    image: "flow-remote:latest"
+    container_name: "flow-remote"
     environment:
       TZ: "Asia/Shanghai"
     volumes:
-      - ./data/dev-ubuntu:/data
+      - ./data:/data
     ports:
-      - "8080:8080"
+      - "2222:22"
+      - "18000-18009:18000-18009"
