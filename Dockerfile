@@ -148,6 +148,7 @@ RUN \
         curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
         apt update -y --no-install-recommends; \
         apt install -y --no-install-recommends nodejs; \
+        npm config set registry https://registry.npm.taobao.org; \
         if [ "${INSTALL_NODE}" = "true" && "${INSTALL_YARN}" = "true" ]; then \
             npm i -g corepack; \
             corepack enable; \
@@ -160,6 +161,7 @@ RUN \
                 | awk -F " " '{print $2}'` \
                 corepack prepare yarn@$yarn_version --activate; \
             fi; \
+            yarn config set registry https://registry.npm.taobao.org; \
         fi; \
     fi
 
