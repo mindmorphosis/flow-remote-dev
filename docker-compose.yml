@@ -1,0 +1,23 @@
+version: '3.2'
+
+services:
+  dev-ubuntu:
+    build:
+      context: "./"
+      args:
+        - INSTALL_MAKE=true
+        - INSTALL_JDK=true
+        - USE_OPENJDK=false
+        - JDK_VERSION=17
+        - INSTALL_MAVEN=true
+        - INSTALL_NODE=true
+        - NODE_VERSION=16
+        - INSTALL_YARN=true
+    image: "dev-ubuntu:latest"
+    container_name: "dev-ubuntu"
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./data/dev-ubuntu:/data
+    ports:
+      - "8080:8080"
