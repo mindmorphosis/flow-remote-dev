@@ -62,7 +62,8 @@ RUN apt install -y --no-install-recommends \
         openssh-server \
         language-pack-en \
         language-pack-zh-hans \
-        language-pack-zh-hans-base
+        language-pack-zh-hans-base \
+        protobuf-compiler
 
 RUN locale-gen zh_CN.UTF-8
 RUN update-locale LANG=zh_CN.UTF-8
