@@ -59,11 +59,11 @@ RUN apt install -y --no-install-recommends \
         telnet \
         git \
         sudo \
+        unzip \
         openssh-server \
         language-pack-en \
         language-pack-zh-hans \
-        language-pack-zh-hans-base \
-        protobuf-compiler
+        language-pack-zh-hans-base
 
 RUN locale-gen zh_CN.UTF-8
 RUN update-locale LANG=zh_CN.UTF-8
@@ -74,6 +74,13 @@ RUN wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 RUN sed -i "s@ZSH_THEME=\".*\"@ZSH_THEME=\"powerlevel10k/powerlevel10k\"@g" /root/.zshrc
 RUN usermod -s /bin/zsh root
+
+# protoc
+RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protoc-3.20.1-linux-x86_64.zip -O protoc.zip
+RUN unzip protoc.zip -d protoc.d
+RUN cp protoc.d/bin/protoc /usr/local/bin/
+RUN cp -r include/google /usr/local/include/
+RUN rm -rf protoc.zip protoc.d
 
 # 安装环境包
 # make
