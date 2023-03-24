@@ -79,7 +79,7 @@ RUN usermod -s /bin/zsh root
 RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protoc-3.20.1-linux-x86_64.zip -O protoc.zip
 RUN unzip protoc.zip -d protoc.d
 RUN cp protoc.d/bin/protoc /usr/local/bin/
-RUN cp -r include/google /usr/local/include/
+RUN cp -r protoc.d/include/google /usr/local/include/
 RUN rm -rf protoc.zip protoc.d
 
 # 安装环境包
