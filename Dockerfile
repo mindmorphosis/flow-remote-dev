@@ -71,7 +71,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361
 RUN apt install -y --no-install-recommends ./zulu-repo_1.0.0-3_all.deb
 RUN rm zulu-repo_1.0.0-3_all.deb
 
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 
 RUN apt update -y --no-install-recommends
 
