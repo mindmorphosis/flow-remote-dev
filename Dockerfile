@@ -95,8 +95,7 @@ RUN apt install -y --no-install-recommends maven; \
 RUN npm config set registry https://registry.npmmirror.com
 RUN npm install -g pnpm
 RUN pnpm config set registry https://registry.npmmirror.com
-RUN pnpm install -g \
-        vite \
+RUN npm install -g \
         husky \
         lint-staged
 
