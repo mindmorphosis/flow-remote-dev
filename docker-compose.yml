@@ -1,4 +1,4 @@
-version: '3.2'
+version: '3.8'
 
 services:
   flow-remote:
@@ -11,8 +11,7 @@ services:
         - JDK_VERSION=17
         - INSTALL_MAVEN=true
         - INSTALL_NODE=true
-        - NODE_VERSION=18
-        - INSTALL_YARN=true
+        - NODE_VERSION=16
     image: "flow-remote:latest"
     container_name: "flow-remote"
     environment:

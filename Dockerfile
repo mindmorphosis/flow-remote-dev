@@ -4,22 +4,6 @@ FROM ubuntu:22.04
 # [Choice] 是否安装make, 默认不安装
 ARG INSTALL_MAKE="false"
 
-# python 参数
-# [Choice] 是否安装python, 默认不安装
-ARG INSTALL_PYTHON="false"
-
-# rust 参数
-# [Choice] 是否安装rust, 默认不安装
-ARG INSTALL_RUST="false"
-
-# go 参数
-# [Choice] 是否安装go, 默认不安装
-ARG INSTALL_GO="false"
-# [Option] go 版本: 1.18, latest
-# ARG GO_VERSION="latest"
-# [Option] go 代理: https://proxy.golang.com.cn,direct
-ARG GOPROXY
-
 # java 参数
 # [Choice] 是否安装jdk, 默认不安装
 ARG INSTALL_JDK="false"
@@ -82,96 +66,39 @@ RUN cp protoc.d/bin/protoc /usr/local/bin/
 RUN cp -r protoc.d/include/google /usr/local/include/
 RUN rm -rf protoc.zip protoc.d
 
+RUN curl -O https://cdn.azul.com/zulu/bin/zulu-repo_1.0.0-3_all.deb
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9
+RUN apt install -y --no-install-recommends ./zulu-repo_1.0.0-3_all.deb
+RUN rm zulu-repo_1.0.0-3_all.deb
+
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&
+
+RUN apt update -y --no-install-recommends
+
 # 安装环境包
-# make
-RUN \
-    if [ "${INSTALL_MAKE}" = "true" ]; then \
-        apt install -y --no-install-recommends make; \
-    fi
+RUN apt install -y --no-install-recommends \
+        make \
+        zulu${JDK_VERSION}-jdk \
+        maven \
+        nodejs
 
-# python
-RUN \
-    if [ "${INSTALL_PYTHON}" = "true" ]; then \
-        apt install -y --no-install-recommends python3; \
-    fi
+# maven 源
+RUN apt install -y --no-install-recommends maven; \
+        sed -i "$(sed -n -e "/<mirrors>/=" /etc/maven/settings.xml)a\
+\\\\\\\\    <mirror>\n\
+\\\\\\\\      <id>huaweicloud<\/id>\n\
+\\\\\\\\      <mirrorOf>*<\/mirrorOf>\n\
+\\\\\\\\      <url>https://repo.huaweicloud.com/repository/maven/<\/url>\n\
+\\\\\\\\    <\/mirror>\n\
+        " /etc/maven/settings.xml
 
-# rust
-RUN \
-    if [ "${INSTALL_RUST}" = "true" ]; then \
-        curl https://sh.rustup.rs --proto '=https' --tlsv1.2 -sSf | sh -s -- -y; \
-        # 稳定(stable)工具链
-        $HOME/.cargo/bin/rustup toolchain install "stable-$(arch)-unknown-linux-gnu"; \
-        # 每晚(nightly)工具链
-        $HOME/.cargo/bin/rustup toolchain install "nightly-$(arch)-unknown-linux-gnu"; \
-        # 切换nightly为默认
-        $HOME/.cargo/bin/rustup default nightly ; \
-        $HOME/.cargo/bin/rustup target add "$(arch)-unknown-linux-gnu"; \
-        # 更换cargo源
-        echo "[source.crates-io]" >> $HOME/.cargo/config ; \
-        echo "registry = 'https://github.com/rust-lang/crates.io-index'" >> $HOME/.cargo/config ; \
-        echo "replace-with = 'ustc'" >> $HOME/.cargo/config ; \
-        echo "" >> $HOME/.cargo/config ; \
-        echo "[source.ustc]" >> $HOME/.cargo/config ; \
-        echo "registry = 'https://mirrors.ustc.edu.cn/crates.io-index'" >> $HOME/.cargo/config ; \
-    fi
-
-# go
-RUN \
-    if [ "${INSTALL_GO}" = "true" ]; then \
-        apt install -y --no-install-recommends golang-go; \
-        if [ -n "${GOPROXY}" ]; then \
-            go env -w GOPROXY=${GOPROXY}; \
-        fi; \
-    fi
-
-# java
-RUN \
-    if [ "${INSTALL_JDK}" = "true" ]; then \
-        if [ "USE_OPENJDK" = "true" ]; then \
-            apt install -y --no-install-recommends openjdk-${JDK_VERSION}-jdk; \
-        else \
-            curl -O https://cdn.azul.com/zulu/bin/zulu-repo_1.0.0-3_all.deb; \
-            apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9; \
-            apt install -y --no-install-recommends ./zulu-repo_1.0.0-3_all.deb; \
-            apt -q update; \
-            \
-            apt install -y --no-install-recommends zulu${JDK_VERSION}-jdk; \
-        fi; \
-        \
-        if [ "${INSTALL_MAVEN}" = "true" ]; then \
-            apt install -y --no-install-recommends maven; \
-            sed -i "$(sed -n -e "/<mirrors>/=" /etc/maven/settings.xml)a\
-\\\\\\\\\\\\    <mirror>\n\
-\\\\\\\\\\\\      <id>huaweicloud<\/id>\n\
-\\\\\\\\\\\\      <mirrorOf>*<\/mirrorOf>\n\
-\\\\\\\\\\\\      <url>https://repo.huaweicloud.com/repository/maven/<\/url>\n\
-\\\\\\\\\\\\    <\/mirror>\n\
-            " /etc/maven/settings.xml; \
-        fi; \
-    fi
-
-# node.js
-RUN \
-    if [ "${INSTALL_NODE}" = "true" ]; then \
-        curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-        apt update -y --no-install-recommends; \
-        apt install -y --no-install-recommends nodejs; \
-        npm config set registry https://registry.npmmirror.com; \
-        if [ "${INSTALL_NODE}" = "true" && "${INSTALL_YARN}" = "true" ]; then \
-            npm i -g corepack; \
-            corepack enable; \
-            if [ ${NODE_VERSION} -ge 16 ] ; then \
-                corepack prepare yarn@stable --activate; \
-            else \
-                yarn_version=`curl -fsSL "https://github.com/yarnpkg/berry/releases/latest" \
-                | grep "Release" \
-                | head -n 1 \
-                | awk -F " " '{print $2}'` \
-                corepack prepare yarn@$yarn_version --activate; \
-            fi; \
-            yarn config set registry https://registry.npmmirror.com; \
-        fi; \
-    fi
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm install -g pnpm
+RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm install -g \
+        vite \
+        husky \
+        lint-staged
 
 # 清理过时的密钥格式
 RUN for key in $( \
